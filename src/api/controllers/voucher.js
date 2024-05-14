@@ -1,6 +1,7 @@
 const { collectionConst } = require("../../config");
 const { voucherSchema } = require("../../schemas");
 const { ObjectId } = require("mongodb");
+const { helper } = require("../../utils");
 
 exports.getAll = async (req, res) => {
   const db = req.app.locals.db;
@@ -25,24 +26,16 @@ exports.createData = async (req, res) => {
       return res.status(400).json({ message: error.details[0].message });
     }
 
-    for (let i = 0; i < payload.appliedPaymentMethodIds.length; i++) {
-      const paymentId = payload.appliedPaymentMethodIds[i];
-      const validPayment = await db
-        .collection(collectionConst.payments)
-        .findOne({
-          _id: new ObjectId(paymentId || ""),
-        });
-      if (!validPayment)
-        return res
-          .status(400)
-          .json({ message: `Payment ${paymentId} không tồn tại` });
+    const isValidDateISO8601 = helper.isValidDateISO8601(payload.expireAt);
+    if (!isValidDateISO8601) {
+      return res
+        .status(400)
+        .json({ message: "Kiểu dữ liệu expireAt không hợp lệ" });
     }
 
     const doc = {
       ...payload,
-      appliedPaymentMethodIds: payload.appliedPaymentMethodIds.map(
-        (id) => new ObjectId(id || "")
-      ),
+      expireAt: new Date(payload.expireAt),
     };
 
     const product = await db

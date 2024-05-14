@@ -1,5 +1,7 @@
 const { checkoutSchema } = require("../../schemas");
 const { helper } = require("../../utils");
+const { collectionConst } = require("../../config");
+const { ObjectId } = require("mongodb");
 
 exports.checkout = async (req, res) => {
   try {
@@ -8,7 +10,19 @@ exports.checkout = async (req, res) => {
       return res.status(400).json({ message: error.details[0].message });
     }
 
-    const isUnValid = await helper.checkUnValidSkuItem(req, res, value.items);
+    const selectedCart = await db.collection(collectionConst.carts).findOne({
+      _id: new ObjectId(req.body.cartId),
+    });
+    if (!selectedCart) {
+      return res.status(400).json({ message: "Cart item không tìm thấy" });
+    }
+
+    const skuListInCart = selectedCart.items.map((i) => ({
+      ...i,
+      warehouseId: selectedCart.warehouseId,
+    }));
+
+    const isUnValid = await helper.checkUnValidSkuItem(req, res, skuListInCart);
     if (isUnValid) return;
 
     res.status(201).json({ message: "Bạn có thể đặt đơn hàng này" });

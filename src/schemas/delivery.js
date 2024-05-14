@@ -6,7 +6,7 @@ const deliverySchema = Joi.object({
   regionPrices: Joi.array()
     .items(
       Joi.object({
-        regionCode: Joi.number().required(),
+        regionDistance: Joi.number().required(),
         price: Joi.number().required(),
       })
     )

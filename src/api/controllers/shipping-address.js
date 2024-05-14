@@ -3,7 +3,7 @@ const { shippingAddressSchema } = require("../../schemas");
 const { ObjectId } = require("mongodb");
 
 exports.getAll = async (req, res) => {
-  const db = req.app.locals.db;
+  const { db } = req.app.locals;
   const { userId } = req.query;
 
   if (!userId) {
